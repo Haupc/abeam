@@ -38,6 +38,6 @@ func CollectElements(blockNum uint64, iter func(*model.UniPairSyncEvent) bool) (
 	return blockNum, groupedSyncEvents
 }
 
-func FormatKV(key, value any) string {
+func FormatKV(key uint64, value []model.UniPairSyncEvent) string {
 	return fmt.Sprintf("%v:%v", key, value)
 }
