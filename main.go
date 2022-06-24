@@ -22,13 +22,11 @@ func main() {
 	p := beam.NewPipeline()
 	s := p.Root()
 
-	syncPCol := avroio.Read(s, "/Users/haupc/project/abeam/avax-*.avro", reflect.TypeOf(avromodel.SyncEvent{}))
+	syncPCol := avroio.Read(s, "/Users/haupc/project/abeam/bsc-*.avro", reflect.TypeOf(avromodel.SyncEvent{}))
 
 	mappedPCol := beam.ParDo(s, udf.ToKVEvent, syncPCol)
-
 	groupedPCol := beam.GroupByKey(s, mappedPCol)
 	collectedPCol := beam.ParDo(s, udf.CollectElements, groupedPCol)
-	formated := beam.ParDo(s, udf.FormatKV, collectedPCol)
 
 	// Write the output to a file.
 	textio.Write(s, "/Users/haupc/project/abeam/output.txt", formated)

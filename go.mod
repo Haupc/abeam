@@ -7,6 +7,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.19
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.7.0
+	golang.org/x/exp v0.0.0-20220426173459-3bcf042a4bf5
 )
 
 require (
