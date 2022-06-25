@@ -1,17 +1,12 @@
 package main
 
 import (
-	"abeam/model/avromodel"
-	"abeam/udf"
 	"context"
 	"flag"
 	"fmt"
-	"reflect"
 
 	"github.com/apache/beam/sdks/v2/go/pkg/beam"
-	"github.com/apache/beam/sdks/v2/go/pkg/beam/io/avroio"
 	_ "github.com/apache/beam/sdks/v2/go/pkg/beam/io/filesystem/local"
-	"github.com/apache/beam/sdks/v2/go/pkg/beam/io/textio"
 	"github.com/apache/beam/sdks/v2/go/pkg/beam/x/beamx"
 )
 
@@ -22,14 +17,12 @@ func main() {
 	p := beam.NewPipeline()
 	s := p.Root()
 
-	syncPCol := avroio.Read(s, "/Users/haupc/project/abeam/bsc-*.avro", reflect.TypeOf(avromodel.SyncEvent{}))
+	firstPCol := beam.Create(s, "first", "mid1", "mid2", "mid3", "last")
 
-	mappedPCol := beam.ParDo(s, udf.ToKVEvent, syncPCol)
-	groupedPCol := beam.GroupByKey(s, mappedPCol)
-	collectedPCol := beam.ParDo(s, udf.CollectElements, groupedPCol)
-
-	// Write the output to a file.
-	textio.Write(s, "/Users/haupc/project/abeam/output.txt", formated)
+	beam.ParDo(s, func(ele string, emit func(string, string)) {
+		emit(ele, ele)
+	}, firstPCol)
+	// textio.Write(s, "/Users/haupc/project/abeam/output.txt", firstPCol)
 
 	if err := beamx.Run(context.Background(), p); err != nil {
 		fmt.Printf("Pipeline failed: %v", err)

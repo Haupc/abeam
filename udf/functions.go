@@ -8,8 +8,6 @@ import (
 	libsModel "abeam/libs/model"
 
 	"github.com/apache/beam/sdks/v2/go/pkg/beam"
-	"github.com/ethereum/go-ethereum/common"
-	"golang.org/x/exp/slices"
 )
 
 func init() {
@@ -44,17 +42,17 @@ func FormatKV(key uint64, value []model.UniPairSyncEvent) string {
 	return fmt.Sprintf("%v:%v", key, value)
 }
 
-func BlockToCandles(values []model.UniPairSyncEvent, emit func(Candle)) {
-	syncEventMap := make(map[common.Address][]model.UniPairSyncEvent) // map pool address, sync event in same block
-	for _, syncEvent := range values {
-		syncEventMap[syncEvent.PoolAddress] = append(syncEventMap[syncEvent.PoolAddress], syncEvent)
-	}
+// func BlockToCandles(values []model.UniPairSyncEvent, emit func(Candle)) {
+// 	syncEventMap := make(map[common.Address][]model.UniPairSyncEvent) // map pool address, sync event in same block
+// 	for _, syncEvent := range values {
+// 		syncEventMap[syncEvent.PoolAddress] = append(syncEventMap[syncEvent.PoolAddress], syncEvent)
+// 	}
 
-	// sort by log index
-	for poolAddress := range syncEventMap {
-		slices.SortFunc(syncEventMap[poolAddress], func(a, b model.UniPairSyncEvent) bool {
-			return a.BaseEvent.LogIndex < b.BaseEvent.LogIndex
-		})
-		var o, h, c, l float64
-	}
-}
+// 	// sort by log index
+// 	for poolAddress := range syncEventMap {
+// 		slices.SortFunc(syncEventMap[poolAddress], func(a, b model.UniPairSyncEvent) bool {
+// 			return a.BaseEvent.LogIndex < b.BaseEvent.LogIndex
+// 		})
+// 		var o, h, c, l float64
+// 	}
+// }
