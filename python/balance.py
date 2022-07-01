@@ -62,12 +62,6 @@ def main(argv=None, save_main_session=True):
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--input',
-        dest='input',
-        # log_0000000000_0000000999
-        default='gs://krystal-log-warehouse-v1/aurora-transfer-events-v8/log_*.avro',
-        help='Input file to process.')
-    parser.add_argument(
         '--bigtable_instance',
         dest='bigtable_instance',
         required=True,
@@ -82,6 +76,11 @@ def main(argv=None, save_main_session=True):
         dest='bigtable_project',
         required=True,
         help='bigtable_project to write.')
+    parser.add_argument(
+        '--input',
+        dest='input',
+        required=True,
+        help='Input file to process.')
     parser.add_argument(
         '--chain_id',
         dest='chain_id',
