@@ -1,14 +1,15 @@
+chain_name = aurora
+chain_id = 1313161554
 run:
-	GOOGLE_APPLICATION_CREDENTIALS=~/.secret/dataflow.json python3 balance.py \
-	--input gs://krystal-log-warehouse-v1/arbitrum-transfer-events-v8/log_0000000000_0000000999.avro \
+	GOOGLE_APPLICATION_CREDENTIALS=~/.secret/dataflow.json python3 negative.py \
 	--bigtable_instance haupc-instance \
 	--bigtable_table balance \
 	--bigtable_project dev-krystal-wallet \
-	--chain_id 42161
-chain_name = fantom
-chain_id = 2522
+	--chain_id $(chain_id) \
+	--input gs://krystal-log-warehouse-v1/$(chain_name)-transfer-events-v8/log_0000000000_0000000999.avro \
+	--job_name $(chain_name)
 rundataflow:
-	GOOGLE_APPLICATION_CREDENTIALS=~/.secret/dataflow.json python3 balance.py \
+	GOOGLE_APPLICATION_CREDENTIALS=~/.secret/dataflow.json python3 negative.py \
 	--runner DataflowRunner \
 	--project dev-krystal-wallet \
 	--region asia-southeast1 \
@@ -17,8 +18,6 @@ rundataflow:
 	--bigtable_instance haupc-instance \
 	--bigtable_table balance \
 	--bigtable_project dev-krystal-wallet \
+	--max_num_workers 200 \
 	--chain_id $(chain_id) \
 	--input gs://krystal-log-warehouse-v1/$(chain_name)-transfer-events-v8/log_*.avro \
-	--max_num_workers 200 \
-	--job_name $(chain_name)-n1-standard-2 \
-	--machine_type n1-standard-2
