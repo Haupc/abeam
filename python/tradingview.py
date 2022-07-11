@@ -52,8 +52,9 @@ def truncateTime(timeStamp: int, time: str):
 
 
 class Candle:
-    def __init__(self, blockTime, logIndex, poolAddress, rev0, rev1, open, close, high, low):
-        self.blockTime = blockTime
+    def __init__(self, openBlockTime, closeBlockTime, logIndex, poolAddress, rev0, rev1, open, close, high, low):
+        self.openBlockTime = openBlockTime
+        self.closeBlockTime = closeBlockTime
         self.openLogIndex = logIndex
         self.closeLogIndex = logIndex
         self.poolAddress = poolAddress
@@ -65,7 +66,7 @@ class Candle:
         self.low = low
 
     def key(self, timeInterval: str):
-        return "{0}:{1}".format(self.poolAddress, truncateTime(self.blockTime, timeInterval))
+        return "{0}:{1}".format(self.poolAddress, truncateTime(self.openBlockTime, timeInterval))
 
     def CbtKey(self, chainId: str, openTime: str):
         return "{0}:{1}:{2}".format(self.poolAddress, chainId, openTime)
@@ -78,26 +79,29 @@ def syncEventToCandle(event):
     rev0 = int(event['token0Reserve'])/(10**event['token0Decimals'])
     rev1 = int(event['token1Reserve'])/(10**event['token1Decimals'])
     o = rev0/rev1
-    return Candle(blockTime, logIndex, poolAddress, rev0, rev1, o, o, o, o)
+    return Candle(blockTime, blockTime, logIndex, poolAddress, rev0, rev1, o, o, o, o)
 
 
 def mergeCandle(existingCandle: Candle, incomingCandle: Candle):
-    if (existingCandle.blockTime == -1):
+    if (existingCandle.openBlockTime == -1):
         return incomingCandle
-    if (incomingCandle.blockTime < existingCandle.blockTime
-            or (incomingCandle.blockTime == existingCandle.blockTime and incomingCandle.openLogIndex < existingCandle.openLogIndex)):
+    if (incomingCandle.openBlockTime < existingCandle.openBlockTime
+            or (incomingCandle.openBlockTime == existingCandle.openBlockTime and incomingCandle.openLogIndex < existingCandle.openLogIndex)):
+        existingCandle.openBlockTime = incomingCandle.openBlockTime
         existingCandle.open = incomingCandle.open
         existingCandle.openLogIndex = incomingCandle.openLogIndex
 
-    if (incomingCandle.blockTime > existingCandle.blockTime
-            or (incomingCandle.blockTime == existingCandle.blockTime and incomingCandle.closeLogIndex > existingCandle.closeLogIndex)):
+    if (incomingCandle.closeBlockTime > existingCandle.closeBlockTime
+            or (incomingCandle.closeBlockTime == existingCandle.closeBlockTime and incomingCandle.closeLogIndex > existingCandle.closeLogIndex)):
+        existingCandle.closeBlockTime = incomingCandle.closeBlockTime
         existingCandle.close = incomingCandle.close
         existingCandle.closeLogIndex = incomingCandle.closeLogIndex
         existingCandle.rev0 = incomingCandle.rev0
         existingCandle.rev1 = incomingCandle.rev1
 
     existingCandle.high = max(existingCandle.high, incomingCandle.high)
-    existingCandle.low = min(existingCandle.low, incomingCandle.low)
+    existingCandle.low = (existingCandle.low+incomingCandle.low) if (existingCandle.low *
+                                                                     incomingCandle.low) > 0 else min(existingCandle.low, incomingCandle.low)
     return existingCandle
 
 
@@ -110,17 +114,17 @@ class ToKVAndSplitFn(beam.DoFn):
 
 class CombineCandle(beam.CombineFn):
     def create_accumulator(self):
-        return Candle(-1, -1, '', 0, 0, 0, 0, 0, 0)
+        return Candle(-1, -1, -1, '', 0, 0, 0, 0, 0, 0)
 
-    def add_input(self, accumulator, input):
-        if (accumulator.blockTime == -1):
+    def add_input(self, accumulator: Candle, input: Candle):
+        if (accumulator.openBlockTime == -1):
             return input
         candle = accumulator
         return mergeCandle(candle, input)
 
     def merge_accumulators(self, accumulators):
         # accumulators = [candle1, candle2, candle3,...]
-        initCanlde = Candle(-1, -1, '', 0, 0, 0, 0, 0, 0)
+        initCanlde = Candle(-1, -1, -1, '', 0, 0, 0, 0, 0, 0)
         for candle in accumulators:
             initCanlde = mergeCandle(initCanlde, candle)
         return initCanlde

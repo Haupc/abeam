@@ -1,5 +1,8 @@
 chain_name = arbitrum
 chain_id = 42161
+date_time=`date +'%H:%M:%S-%d.%m.%Y'`
+test:
+	echo $(date_time)
 neg:
 	GOOGLE_APPLICATION_CREDENTIALS=~/.secret/dataflow.json python3 negative.py \
 	--bigtable_instance haupc-instance \
@@ -41,5 +44,5 @@ tradingview-df:
 	--bigtable_project dev-krystal-wallet \
 	--max_num_workers 200 \
 	--chain_id $(chain_id) \
-	--job_name $(chain_name)-tradingview \
+	--job_name $(chain_name)-tradingview-$(date_time) \
 	--input gs://krystal-log-warehouse-v1/$(chain_name)-sync-events-v10/log_*.avro
