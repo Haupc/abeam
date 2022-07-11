@@ -86,13 +86,15 @@ def mergeCandle(existingCandle: Candle, incomingCandle: Candle):
     if (existingCandle.openBlockTime == -1):
         return incomingCandle
     if (incomingCandle.openBlockTime < existingCandle.openBlockTime
-            or (incomingCandle.openBlockTime == existingCandle.openBlockTime and incomingCandle.openLogIndex < existingCandle.openLogIndex)):
+            or (incomingCandle.openBlockTime == existingCandle.openBlockTime
+                and incomingCandle.openLogIndex < existingCandle.openLogIndex)):
         existingCandle.openBlockTime = incomingCandle.openBlockTime
         existingCandle.open = incomingCandle.open
         existingCandle.openLogIndex = incomingCandle.openLogIndex
 
     if (incomingCandle.closeBlockTime > existingCandle.closeBlockTime
-            or (incomingCandle.closeBlockTime == existingCandle.closeBlockTime and incomingCandle.closeLogIndex > existingCandle.closeLogIndex)):
+            or (incomingCandle.closeBlockTime == existingCandle.closeBlockTime
+                and incomingCandle.closeLogIndex > existingCandle.closeLogIndex)):
         existingCandle.closeBlockTime = incomingCandle.closeBlockTime
         existingCandle.close = incomingCandle.close
         existingCandle.closeLogIndex = incomingCandle.closeLogIndex
@@ -101,7 +103,7 @@ def mergeCandle(existingCandle: Candle, incomingCandle: Candle):
 
     existingCandle.high = max(existingCandle.high, incomingCandle.high)
     existingCandle.low = (existingCandle.low+incomingCandle.low) if (existingCandle.low *
-                                                                     incomingCandle.low) > 0 else min(existingCandle.low, incomingCandle.low)
+                                                                     incomingCandle.low) == 0 else min(existingCandle.low, incomingCandle.low)
     return existingCandle
 
 

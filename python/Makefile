@@ -1,6 +1,6 @@
 chain_name = arbitrum
 chain_id = 42161
-date_time=`date +'%H:%M:%S-%d.%m.%Y'`
+date_time=`date +'%H-%M-%S-%d-%m-%Y'`
 test:
 	echo $(date_time)
 neg:
